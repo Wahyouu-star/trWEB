@@ -1,8 +1,20 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  // Jika user klik "Masuk sebagai Guest"
+  // ================================
+  // LOGIN SEBAGAI GUEST
+  // ================================
   if (isset($_POST['login_guest'])) {
+
+    $_SESSION['user'] = [
+      'nama' => 'Guest',
+      'username' => 'guest'
+    ];
+
     echo "
       <script>
         window.onload = function() {
@@ -15,8 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
       </script>
     ";
+
   } else {
-    // Proses signup biasa
+
+    // ================================
+    // SIGNUP BIASA (SESSION)
+    // ================================
     $nama       = $_POST['nama'] ?? '';
     $username   = $_POST['username'] ?? '';
     $password   = $_POST['password'] ?? '';
@@ -25,7 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $konfirmasi) {
       echo "<script>alert('Password dan konfirmasi tidak sama!');</script>";
     } else {
-      // Di sini nanti bisa ditambah INSERT ke database
+
+      // Simpan user ke SESSION
+      $_SESSION['users'][$username] = [
+        'nama'     => $nama,
+        'username' => $username,
+        'password' => password_hash($password, PASSWORD_DEFAULT)
+      ];
+
       echo "
         <script>
           window.onload = function() {
@@ -152,129 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background-color: #f7e4e4;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-
-    .small-links {
-      font-size: 12px;
-    }
-
-    .small-links a {
-      text-decoration: none;
-      color: #5a5a5a;
-    }
-
-    /* Modal */
-    .modal-content {
-      border-radius: 15px;
-      padding: 20px;
-    }
-
-    .btn-primary {
-      background-color: #c24a4a;
-      border: none;
-    }
-
-    .btn-primary:hover {
-      background-color: #a83838;
-    }
-
-    /* Chat CS */
-    .chat-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #c24a4a;
-      color: #fff;
-      border-radius: 50%;
-      width: 55px;
-      height: 55px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-      cursor: pointer;
-      z-index: 10;
-    }
-
-    .chat-box {
-      position: fixed;
-      bottom: 85px;
-      right: 20px;
-      width: 280px;
-      max-height: 380px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 10;
-    }
-
-    .chat-header {
-      background-color: #c24a4a;
-      color: #fff;
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .chat-header span {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .chat-body {
-      padding: 10px;
-      flex: 1;
-      overflow-y: auto;
-      font-size: 0.8rem;
-      background-color: #f8f8f8;
-    }
-
-    .chat-message {
-      margin-bottom: 8px;
-      max-width: 90%;
-      padding: 6px 8px;
-      border-radius: 8px;
-    }
-
-    .chat-message.cs {
-      background-color: #ffffff;
-      align-self: flex-start;
-      border: 1px solid #e0e0e0;
-    }
-
-    .chat-message.user {
-      background-color: #c24a4a;
-      color: #fff;
-      margin-left: auto;
-    }
-
-    .chat-footer {
-      padding: 8px;
-      background: #ffffff;
-      border-top: 1px solid #eee;
-      display: flex;
-      gap: 5px;
-    }
-
-    .chat-footer input {
-      flex: 1;
-      border-radius: 20px;
-      border: 1px solid #ddd;
-      padding: 5px 12px;
-      font-size: 0.8rem;
-    }
-
-    .chat-footer button {
-      border-radius: 20px;
-      border: none;
-      background-color: #c24a4a;
-      color: #fff;
-      padding: 5px 10px;
-      font-size: 0.8rem;
-    }
   </style>
 </head>
 <body>
@@ -285,8 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="signup-box">
       <h5>DAFTAR AKUN<br>DI AUTO CARE</h5>
 
-      <!-- FORM SIGNUP BIASA -->
-      <form method="POST" action="">
+      <form method="POST">
         <div class="form-group">
           <i class="bi bi-person-fill form-icon"></i>
           <input type="text" name="nama" class="form-control" placeholder="Nama Lengkap" required>
@@ -307,106 +206,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="password" name="konfirmasi" class="form-control" placeholder="Konfirmasi Password" required>
         </div>
 
-        <div class="text-start small small-links mb-3">
-          <a href="login.php">Sudah punya akun? <span class="text-danger">login disini</span></a>
-        </div>
-
-        <button type="submit" class="btn btn-signup d-flex align-items-center mx-auto">
-          <i class="bi bi-person-plus-fill me-1"></i> Daftar
-        </button>
+        <button type="submit" class="btn btn-signup mx-auto">Daftar</button>
       </form>
 
-      <!-- FORM MASUK SEBAGAI GUEST -->
-      <form method="POST" action="" class="mt-2">
+      <form method="POST" class="mt-2">
         <input type="hidden" name="login_guest" value="1">
-        <button type="submit" class="btn btn-guest d-flex align-items-center mx-auto">
-          <i class="bi bi-person-circle me-1"></i> Masuk sebagai Guest
-        </button>
+        <button type="submit" class="btn btn-guest mx-auto">Masuk sebagai Guest</button>
       </form>
 
     </div>
   </div>
 
   <!-- Modal sukses -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal fade" id="successModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content text-center">
         <i class="bi bi-check-circle-fill" style="font-size: 48px; color: #c24a4a;"></i>
         <h5 class="mt-2">Berhasil</h5>
-        <p id="successText">Akun Anda telah dibuat. Silakan login.</p>
+        <p id="successText"></p>
         <button type="button" id="okButton" class="btn btn-primary mt-2">Ok</button>
       </div>
     </div>
   </div>
 
-  <!-- CHAT CS FLOATING -->
-  <div class="chat-button" id="chatToggle" title="Chat CS">
-    <i class="bi bi-chat-dots-fill" style="font-size: 1.3rem;"></i>
-  </div>
-
-  <div class="chat-box" id="chatBox">
-    <div class="chat-header">
-      <span><i class="bi bi-headset me-1"></i> CS Auto Care</span>
-      <button type="button" class="btn btn-sm btn-light py-0 px-2" id="chatClose">
-        <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
-      </button>
-    </div>
-    <div class="chat-body" id="chatMessages">
-      <div class="chat-message cs">
-        Halo! Ada yang bisa kami bantu terkait pendaftaran?
-      </div>
-    </div>
-    <div class="chat-footer">
-      <input type="text" id="chatInput" placeholder="Tulis pesan..." />
-      <button type="button" id="chatSend"><i class="bi bi-send"></i></button>
-    </div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Toggle Chat Box
-    const chatToggle = document.getElementById('chatToggle');
-    const chatBox = document.getElementById('chatBox');
-    const chatClose = document.getElementById('chatClose');
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const chatSend = document.getElementById('chatSend');
 
-    chatToggle.addEventListener('click', () => {
-      chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
-    });
-
-    chatClose.addEventListener('click', () => {
-      chatBox.style.display = 'none';
-    });
-
-    function addMessage(text, sender) {
-      const div = document.createElement('div');
-      div.classList.add('chat-message', sender);
-      div.textContent = text;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function sendUserMessage() {
-      const text = chatInput.value.trim();
-      if (!text) return;
-      addMessage(text, 'user');
-      chatInput.value = '';
-
-      // Jawaban otomatis sederhana dari CS
-      setTimeout(() => {
-        addMessage('Terima kasih, pesan Anda sudah kami terima. CS akan segera membalas.', 'cs');
-      }, 800);
-    }
-
-    chatSend.addEventListener('click', sendUserMessage);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendUserMessage();
-      }
-    });
-  </script>
 </body>
 </html>
