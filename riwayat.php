@@ -1,228 +1,177 @@
 <?php
-$title = "Profil Service Rutin";
-$brand = "AUTO CARE";
-$kendala = [
-    'judul' => 'Kendala',
-    'deskripsi' => 'Muncul bunyi di bawah mobil, dan kontrol mobil terasa kurang nyaman saat handling. Getaran terasa pada kecepatan sedang.',
-    'tanggal' => '2025-10-24',
-    'intensitas' => 'Sedang'
-];
-$right_cards = [
-    ['judul' => 'Riwayat Kendala', 'isi' => ['Kontrol mobil kurang nyaman', 'Kaki-kaki mobil bermasalah']],
-    ['judul' => 'Penanganan', 'isi' => ['Service sedang pada kaki-kaki.', 'Penyesuaian handling dan balancing roda.']],
-    ['judul' => 'Tambahan', 'isi' => ['Oli Shell Helix 1 Liter', 'Air radiator']]
-];
-function e($s){ return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
-function formatTgl($iso){
-    if(!$iso) return '';
-    $ts = strtotime($iso);
-    $bulan = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    return date('j',$ts).' '.$bulan[(int)date('n',$ts)].' '.date('Y',$ts);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
-?><!doctype html>
+?>
+
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><?php echo e($title); ?> - <?php echo e($brand); ?></title>
-  <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      background:#ffffff;
-      color:#111;
-    }
+<meta charset="UTF-8">
+<title>Riwayat Servis - AUTO CARE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    :root {
-      --right-offset: 70px;
-      --left-offset: 60px;
-      --accent-red: #d32f2f;
-    }
+<style>
+body{
+  margin:0;
+  font-family: 'Poppins', Arial, sans-serif;
+  background:#fff;
+}
 
-    header{
-      height:64px;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 28px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.06);
-      position:relative;
-      z-index:50;
-    }
-    header h1{font-size:1.1rem;margin:0}
-    header a{text-decoration:none;color:#111;font-weight:500}
+/* ===== NAVBAR ===== */
+.consistent-navbar {
+  width: 100%;
+  height: 68px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
 
-    .canvas{
-      position:relative;
-      padding:56px 20px 80px;
-      min-height:calc(100vh - 64px);
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      overflow:hidden;
-    }
+.navbar-brand {
+  font-weight: 700;
+  color: #b22929;
+  font-size: 22px; 
+  text-decoration: none;
+}
 
-    /* background logo dinaikkan agar terlihat penuh */
-    .canvas::before{
-      content:"";
-      position:absolute;
-      left:50%;
-      top:-14%; /* dinaikkan lagi */
-      transform:translateX(-50%);
-      width:900px;
-      height:900px;
-      background-image:url('background.png');
-      background-repeat:no-repeat;
-      background-position:center;
-      background-size:contain;
-      opacity:0.07;
-      pointer-events:none;
-      z-index:1;
-    }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
-    .wrap{
-      width:100%;
-      max-width:1100px;
-      display:grid;
-      grid-template-columns: 1fr 420px;
-      gap:32px;
-      position:relative;
-      z-index:3;
-      align-items:start;
-    }
+.nav-link-text {
+  color: #000;
+  font-weight: 500;
+  text-decoration: none;
+}
 
-    .title-pill{
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      top:-18px;
-      background:var(--accent-red);
-      color:#fff;
-      padding:12px 28px;
-      border-radius:999px;
-      box-shadow:0 10px 28px rgba(8,12,20,0.08);
-      font-weight:700;
-      z-index:6;
-      letter-spacing:0.2px;
-    }
+.profile-icon-wrapper img {
+  width: 38px;
+}
 
-    /* LEFT CARD */
-    .left{ padding-top:6px; }
-    .card-big{
-      background:#fff;
-      border-radius:12px;
-      box-shadow:0 8px 26px rgba(8,12,20,0.06);
-      border:1.5px solid rgba(0,0,0,0.15); /* outline lebih tegas */
-      padding:26px;
-      min-height:220px;
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      margin-top:var(--left-offset);
-      transition:transform 0.2s ease;
-    }
-    .card-big:hover {
-      transform:translateY(-3px);
-    }
-    .card-big h3{
-      margin:0 0 12px 0;
-      text-align:center;
-      font-size:1.05rem;
-    }
-    .card-big p{
-      margin:0;
-      color:#333;
-      line-height:1.6;
-    }
-    .card-footer{
-      margin-top:18px;
-      padding-top:12px;
-      border-top:1px solid #f1f1f1;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      color:#444;
-      font-size:0.95rem;
-    }
+/* ===== KONTEN ===== */
+main{
+  padding-top: 110px;
+  max-width: 900px;
+  margin: auto;
+}
 
-    /* RIGHT CARDS */
-    .right{
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-      align-items:stretch;
-      margin-top:var(--right-offset);
-    }
-    .small-card{
-      background:#fff;
-      border-radius:12px;
-      padding:16px;
-      box-shadow:0 6px 18px rgba(8,12,20,0.06);
-      border:1.5px solid rgba(0,0,0,0.15); /* outline lebih jelas */
-      width:100%;
-      transition:transform 0.2s ease;
-    }
-    .small-card:hover {
-      transform:translateY(-3px);
-    }
-    .small-card h4{
-      margin:0 0 8px 0;
-      font-size:0.98rem;
-    }
-    .small-card p{
-      margin:0 0 6px 0;
-      line-height:1.5;
-      color:#333;
-      font-size:0.95rem;
-    }
+.judul{
+  background:#2ea44f;
+  color:white;
+  padding:14px 40px;
+  border-radius:999px;
+  width:max-content;
+  margin:0 auto 30px;
+  font-weight:600;
+  box-shadow:0 6px 18px rgba(0,0,0,0.2);
+}
 
-    @media(max-width:880px){
-      .wrap{grid-template-columns:1fr}
-      .title-pill{position:relative;transform:none;margin:0 auto 16px}
-      .left{padding-top:0}
-      .card-big{margin-top:20px}
-      .right{order:2;margin-top:20px}
-    }
-  </style>
+#riwayatList{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:0 20px 60px;
+}
+
+.svc-card{
+  background:white;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+  border-left:6px solid #2ea44f;
+}
+
+.svc-card b{
+  font-size:16px;
+}
+
+.kosong{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+  text-align:center;
+  color:#666;
+}
+
+.hapus-semua{
+  background:#d32f2f;
+  color:white;
+  border:none;
+  padding:12px 24px;
+  border-radius:10px;
+  cursor:pointer;
+  margin:20px auto;
+  display:block;
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1><?php echo e($brand); ?></h1>
-    <a href="beranda.php">Beranda</a>
-  </header>
 
-  <div class="canvas">
-    <div class="wrap">
-      <div class="title-pill"><?php echo e($title); ?></div>
-
-      <div class="left">
-        <div class="card-big">
-          <div>
-            <h3><?php echo e($kendala['judul']); ?></h3>
-            <p><?php echo e($kendala['deskripsi']); ?></p>
-          </div>
-          <div class="card-footer">
-            <div><?php echo e(formatTgl($kendala['tanggal'])); ?></div>
-            <div><strong>intensitas</strong> : <?php echo e($kendala['intensitas']); ?></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="right">
-        <?php foreach($right_cards as $card): ?>
-          <div class="small-card">
-            <h4><?php echo e($card['judul']); ?></h4>
-            <?php foreach($card['isi'] as $line): ?>
-              <p>› <?php echo e($line); ?></p>
-            <?php endforeach; ?>
-          </div>
-        <?php endforeach; ?>
-      </div>
-
-    </div>
+<!-- ===== NAVBAR ===== -->
+<header class="consistent-navbar">
+  <a class="navbar-brand" href="beranda.php">AUTO CARE</a>
+  <div class="nav-links">
+    <a class="nav-link-text" href="beranda.php">Beranda</a>
+    <a href="profil.php" class="profile-icon-wrapper">
+      <img src="IMG/profil.jpg">
+    </a>
   </div>
+</header>
+
+<!-- ===== KONTEN RIWAYAT ===== -->
+<main>
+
+<div class="judul">Riwayat Servis</div>
+
+<div id="riwayatList"></div>
+
+<button class="hapus-semua" onclick="hapusRiwayat()">Hapus Semua Riwayat</button>
+
+</main>
+
+<!-- ===== SCRIPT ===== -->
+<script>
+const list = document.getElementById("riwayatList");
+const data = JSON.parse(localStorage.getItem("riwayat_servis")) || [];
+
+if(data.length === 0){
+  list.innerHTML = "<div class='kosong'>Belum ada riwayat servis.</div>";
+}else{
+  data.forEach(item=>{
+    const div = document.createElement("div");
+    div.className = "svc-card";
+    div.innerHTML = `
+      <b>${item.jenis}</b><br><br>
+      Jarak: ${item.jarak} km<br>
+      Durasi: ${item.durasi}<br>
+      Waktu: ${item.waktu}<br>
+      Interval: ${item.interval}<br><br>
+      <small>${item.tanggal}</small>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function hapusRiwayat(){
+  if(confirm("Yakin ingin menghapus semua riwayat servis?")){
+    localStorage.removeItem("riwayat_servis");
+    location.reload();
+  }
+}
+</script>
+
 </body>
 </html>

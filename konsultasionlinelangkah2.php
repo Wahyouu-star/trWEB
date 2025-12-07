@@ -1,5 +1,9 @@
 <?php
-// Jika form disubmit, ambil data dari POST
+// Ambil data mekanik dari URL
+$namaMekanik = isset($_GET['mekanik']) ? htmlspecialchars($_GET['mekanik']) : 'Tidak Diketahui';
+$bidangMekanik = isset($_GET['bidang']) ? htmlspecialchars($_GET['bidang']) : 'Bidang Tidak Diketahui';
+
+// Jika form disubmit
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $nama = htmlspecialchars($_POST['nama']);
   $alamat = htmlspecialchars($_POST['alamat']);
@@ -12,10 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="UTF-8">
   <title>AUTO CARE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -23,7 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       background-color: #f5f5f5;
     }
 
-    /* Header */
     header {
       background-color: white;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -62,13 +64,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       font-size: 18px;
     }
 
-    /* Konten utama */
     main {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       padding: 50px 20px;
       gap: 50px;
+      flex-wrap: wrap;
     }
 
     /* Kartu mekanik */
@@ -77,23 +79,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 250px;
-      height: 300px;
+      height: 320px;
       text-align: center;
       padding: 20px;
+      transition: transform 0.3s ease;
     }
 
-    .card img {
-      width: 100px;
-      height: 100px;
-      margin-top: 40px;
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    .mekanik-icon {
+      font-size: 90px;
+      color: #d13d3d;
+      margin-top: 30px;
     }
 
     .card p {
-      margin-top: 20px;
+      margin-top: 10px;
       font-weight: 600;
+      font-size: 18px;
     }
 
-    /* Form */
+    .card small {
+      display: block;
+      margin-top: 5px;
+      color: #666;
+      font-size: 14px;
+    }
+
     .form-container {
       background-color: white;
       border-radius: 10px;
@@ -145,7 +160,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       background-color: #b73232;
     }
 
-    /* Tombol panah kembali */
     .back-btn {
       position: absolute;
       top: 80px;
@@ -155,13 +169,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       text-decoration: none;
     }
 
-    /* Hasil data */
     .hasil {
       margin-top: 30px;
       padding: 15px;
       background-color: #eaf6ea;
       border: 1px solid #b5e0b5;
       border-radius: 8px;
+    }
+
+    /* Tombol Chat Mekanik */
+    .btn-chat {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(90deg, #d13d3d, #ff5c5c);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 14px 26px;
+      border-radius: 30px;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(209, 61, 61, 0.4);
+    }
+
+    .btn-chat i {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-chat:hover {
+      background: linear-gradient(90deg, #b73232, #ff4b4b);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(209, 61, 61, 0.6);
+    }
+
+    .btn-chat:hover i {
+      transform: scale(1.2);
     }
   </style>
 </head>
@@ -170,18 +216,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <header>
     <h1>AUTO CARE</h1>
     <div class="menu-kanan">
-      <a href="#">Beranda</a>
+      <a href="beranda.php">Beranda</a>
       <div class="icon-user">👤</div>
     </div>
   </header>
 
-  <a href="#" class="back-btn">←</a>
+  <a href="daftarnamamekanik.php" class="back-btn">←</a>
 
   <main>
     <!-- Kartu Mekanik -->
     <div class="card">
-      <img src="https://cdn-icons-png.flaticon.com/512/679/679922.png" alt="Mekanik">
-      <p>Nama Mekanik</p>
+      <div class="mekanik-icon"><i class="bi bi-person-gear"></i></div>
+      <p><?= $namaMekanik ?></p>
+      <small>Spesialis: <?= $bidangMekanik ?></small>
     </div>
 
     <!-- Form Data Diri -->
@@ -200,9 +247,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <label for="kendaraan">Jenis Kendaraan</label>
         <select id="kendaraan" name="kendaraan" required>
           <option value="">Pilih jenis kendaraan</option>
-          <option value="Mobil">Mobil</option>
-          <option value="Motor">Motor</option>
-          <option value="Lainnya">Lainnya</option>
+          <option value="Matic">MATIC</option>
+          <option value="Manual">MANUAL</option>
         </select>
 
         <button type="submit">LANJUTKAN</button>
@@ -215,6 +261,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <p><strong>Alamat:</strong> <?= $alamat ?></p>
           <p><strong>No. Telp:</strong> <?= $telp ?></p>
           <p><strong>Jenis Kendaraan:</strong> <?= $kendaraan ?></p>
+        </div>
+
+        <!-- Tombol Chat Mekanik -->
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="konsultasichatmekanik.php?mekanik=<?= urlencode($namaMekanik) ?>&bidang=<?= urlencode($bidangMekanik) ?>" class="btn-chat">
+            <i class="bi bi-chat-dots-fill"></i> Chat <?= $namaMekanik ?> Sekarang
+          </a>
         </div>
       <?php endif; ?>
     </div>
