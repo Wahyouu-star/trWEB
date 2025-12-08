@@ -1,3 +1,16 @@
+<?php
+// beranda.php
+// Pastikan session dimulai untuk mengecek status login (Admin/User)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Diperlukan untuk include header/footer
+include "inc/header.php"; 
+
+// Tentukan apakah user yang sedang login adalah Admin
+$is_admin = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == -1;
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,28 +26,7 @@
       background-color: #fff;
     }
 
-    /* === Navbar === */
-    .navbar {
-      background-color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 15px 40px;
-    }
-
-    .navbar-brand {
-      font-weight: 700;
-      color: #b22929 !important;
-    }
-
-    .navbar-nav .nav-link {
-      color: #000 !important;
-      font-weight: 500;
-      margin-left: 20px;
-    }
-
-    .navbar-nav .nav-link:hover {
-      color: #b22929 !important;
-    }
-
+    /* === Navbar === (CUSTOM CSS removed as inc/header is used) */
     .navbar .logo-icon {
       width: 38px;
       height: auto;
@@ -48,16 +40,17 @@
 
     /* === Banner === */
     .banner {
-      margin-top: 85px;
+      /* Margin ini diperlukan untuk menggeser konten di bawah fixed header */
+      margin-top: 85px; 
       text-align: center;
       background-color: #fff;
-      padding: 0 15px; 
+      padding: 0 15px;
     }
 
     .banner img {
       width: 100%;
-      height: auto;      
-      max-height: none;   
+      height: auto;
+      max-height: none;
       border-radius: 10px;
       object-fit: cover;
     }
@@ -121,6 +114,7 @@
       font-weight: 500;
     }
 
+    /* === Produk Diskon === */
     .promo-section {
       background-color: #ffffff;
       padding: 30px 0;
@@ -149,7 +143,7 @@
       border-radius: 10px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       padding: 12px 12px 14px 12px;
-      width: 170px;             
+      width: 170px;              
       text-align: center;
       font-size: 0.85rem;
     }
@@ -192,6 +186,7 @@
       margin-bottom: 6px;
     }
 
+    /* === Tentang Kami === */
     .tentang-section {
       background-color: #b22929;
       color: white;
@@ -244,120 +239,115 @@
         text-align: justify;
       }
     }
-
-    /* === Footer === */
-    footer {
-      background-color: #ffffff;
-      border-top: 1px solid #ddd;
-      padding: 40px 60px;
+    
+    /* === Footer (Rich Footer) === */
+    .rich-footer {
+        background-color: #ffffff;
+        border-top: 1px solid #ddd;
+        padding: 40px 60px;
     }
-
     .footer-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
     }
-
     .footer-left img {
-      width: 60px;
-      height: auto;
+        width: 60px;
+        height: auto;
     }
-
     .footer-left h4 {
-      margin: 0;
-      font-weight: 700;
-      color: #b22929;
+        margin: 0;
+        font-weight: 700;
+        color: #b22929;
     }
-
     .footer-right {
-      display: flex;
-      gap: 50px;
+        display: flex;
+        gap: 50px;
     }
-
     .footer-right h6 {
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: #000;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #000;
     }
-
     .footer-right a {
-      color: #000;
-      text-decoration: none;
-      display: block;
-      font-size: 0.9rem;
-      margin-bottom: 6px;
+        color: #000;
+        text-decoration: none;
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
     }
-
     .footer-right a:hover {
-      text-decoration: underline;
+        text-decoration: underline;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar fixed-top navbar-expand-lg">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">AUTO CARE</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav align-items-center">
-          <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
-          <li class="nav-item">
-            <a href="profil.php" class="nav-link p-0">
-              <img src="IMG/profil.jpg" alt="Profil" class="logo-icon">
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <?php // include "inc/header.php"; // Sudah di-include di atas ?>
 
-  <!-- BANNER -->
   <section class="banner">
-    <img src="img/banner.png" alt="Banner Auto Care" class="img-fluid">
+    <img src="IMG/Banner.png" alt="Banner Auto Care" class="img-fluid">
   </section>
 
-  <!-- LAYANAN -->
   <section class="layanan-section">
     <h3 class="layanan-title">Layanan Kami</h3>
     <div class="layanan-container">
-      <a href="daftarnamamekanik.php" class="layanan-box">
-        <img src="img/konsultasi.png" alt="Konsultasi">
-        <p>Konsultasi</p>
-      </a>
-      <a href="BUATJANJILANGKAH2.PHP" class="layanan-box">
-        <img src="img/booking.png" alt="Booking">
-        <p>Booking</p>
-      </a>
-      <a href="tokosparepart.php" class="layanan-box">
-        <img src="img/sperpart.png" alt="Sparepart">
-        <p>Sparepart</p>
-      </a>
-      <a href="riwayat.php" class="layanan-box">
-        <img src="img/riwayat.png" alt="Riwayat Servis">
-        <p>Riwayat Servis</p>
-      </a>
-      <a href="pengingat.php" class="layanan-box">
-        <img src="img/pengingat.png" alt="Pengingat Servis">
-        <p>Pengingat Servis</p>
-      </a>
+      
+      <?php 
+      // Logika Layanan (Memastikan Admin melihat Menu Admin)
+      if ($is_admin): ?>
+        
+        <a href="admin_dashboard.php" class="layanan-box" style="width: 200px;">
+          <img src="IMG/riwayat.png" alt="Dashboard">
+          <p>ADMIN DASHBOARD</p>
+        </a>
+        <a href="admin_produk_edit.php" class="layanan-box" style="width: 200px;">
+          <img src="IMG/sperpart.png" alt="CRUD">
+          <p>CRUD PRODUK</p>
+        </a>
+        <a href="admin_konsultasi_view.php" class="layanan-box" style="width: 200px;">
+          <img src="IMG/konsultasi.png" alt="Chat">
+          <p>MONITORING CHAT</p>
+        </a>
+        
+      <?php else: ?>
+        
+        <a href="daftarnamamekanik.php" class="layanan-box">
+          <img src="IMG/konsultasi.png" alt="Konsultasi">
+          <p>Konsultasi</p>
+        </a>
+        <a href="BUATJANJILANGKAH2.PHP" class="layanan-box">
+          <img src="IMG/booking.png" alt="Booking">
+          <p>Booking</p>
+        </a>
+        <a href="tokosparepart.php" class="layanan-box">
+          <img src="IMG/sperpart.png" alt="Sparepart">
+          <p>Sparepart</p>
+        </a>
+        <a href="riwayat.php" class="layanan-box">
+          <img src="IMG/riwayat.png" alt="Riwayat Servis">
+          <p>Riwayat Servis</p>
+        </a>
+        <a href="pengingat.php" class="layanan-box">
+          <img src="IMG/pengingat.png" alt="Pengingat Servis">
+          <p>Pengingat Servis</p>
+        </a>
+
+      <?php endif; ?>
+      
     </div>
   </section>
 
-  <!-- PRODUK DISKON  -->
- <section class="promo-section">
+<?php if (!$is_admin): ?>
+  <section class="promo-section">
   <h3 class="promo-title">Produk Diskon</h3>
 
   <div class="promo-container">
 
-    <!-- 1. Aki 12 volt, 45 Ah -->
     <a href="tokosparepart.php" class="promo-card">
       <span class="promo-badge">20%</span>
-      <img src="img/aki.jpg" alt="Aki 12 volt, 45 Ah">
+      <img src="IMG/aki.jpg" alt="Aki 12 volt, 45 Ah">
       <div class="promo-name">Aki 12 volt, 45 Ah</div>
       <div class="promo-price">
         <span class="promo-price-old">Rp125.000</span>
@@ -365,10 +355,9 @@
       </div>
     </a>
 
-    <!-- 2. Busi Gap 0,8 mm -->
     <a href="tokosparepart.php" class="promo-card">
       <span class="promo-badge">15%</span>
-      <img src="img/busi.jpg" alt="Busi Gap 0,8 mm">
+      <img src="IMG/busi.jpg" alt="Busi Gap 0,8 mm">
       <div class="promo-name">Busi Gap 0,8 mm</div>
       <div class="promo-price">
         <span class="promo-price-old">Rp12.000</span>
@@ -376,10 +365,9 @@
       </div>
     </a>
 
-    <!-- 3. Filter Oli Diameter 80 mm -->
     <a href="tokosparepart.php" class="promo-card">
       <span class="promo-badge">10%</span>
-      <img src="img/filteroli.jpg" alt="Filter Oli Diameter 80 mm">
+      <img src="IMG/filteroli.jpg" alt="Filter Oli Diameter 80 mm">
       <div class="promo-name">Filter Oli Diameter 80 mm</div>
       <div class="promo-price">
         <span class="promo-price-old">Rp11.000</span>
@@ -387,10 +375,9 @@
       </div>
     </a>
 
-    <!-- 4. Shockbreaker 45 cm -->
     <a href="tokosparepart.php" class="promo-card">
       <span class="promo-badge">20%</span>
-      <img src="img/shockbreaker.jpg" alt="Shockbreaker 45 cm">
+      <img src="IMG/shockbreaker.jpg" alt="Shockbreaker 45 cm">
       <div class="promo-name">Shockbreaker 45 cm</div>
       <div class="promo-price">
         <span class="promo-price-old">Rp125.000</span>
@@ -398,10 +385,9 @@
       </div>
     </a>
 
-    <!-- 5. Knalpot Diameter 2.5 inch -->
     <a href="tokosparepart.php" class="promo-card">
       <span class="promo-badge">20%</span>
-      <img src="img/knalpot.jpg" alt="Knalpot Diameter 2.5 inch">
+      <img src="IMG/knalpot.jpg" alt="Knalpot Diameter 2.5 inch">
       <div class="promo-name">Knalpot Diameter 2.5 inch</div>
       <div class="promo-price">
         <span class="promo-price-old">Rp125.000</span>
@@ -411,13 +397,13 @@
 
   </div>
 </section>
+<?php endif; ?>
 
 
-  <!-- TENTANG KAMI -->
   <section class="tentang-section">
     <h3 class="tentang-title">Tentang Kami</h3>
     <div class="tentang-card">
-      <img src="img/logo.png" alt="Logo Auto Care">
+      <img src="IMG/LOGO.png" alt="Logo Auto Care">
       <p>
         Auto Care adalah platform layanan otomotif digital yang menghubungkan Anda dengan bengkel dan teknisi terpercaya secara cepat dan mudah.
         Kami hadir untuk menjawab kebutuhan masyarakat modern dalam merawat kendaraan tanpa hambatan waktu dan jarak. <br><br>
@@ -431,18 +417,17 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
-  <footer class="mt-5 py-4">
+  <footer class="rich-footer">
     <div class="container d-flex flex-column flex-md-row justify-content-between align-items-start">
       <div class="footer-left mb-3 mb-md-0">
-        <img src="img/logo.png" alt="Logo Auto Care">
+        <img src="IMG/LOGO.png" alt="Logo Auto Care">
         <h4>AUTO CARE</h4>
       </div>
 
       <div class="footer-right">
         <div>
           <h6>Quick Links</h6>
-          <a href="index.php">Beranda</a>
+          <a href="beranda.php">Beranda</a>
           <a href="profil.php">Profil</a>
         </div>
         <div>

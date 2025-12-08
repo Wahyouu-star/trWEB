@@ -4,6 +4,7 @@ session_start();
 include "inc/koneksi.php"; 
 
 $showSignupSuccess = isset($_GET['signup']) && $_GET['signup'] === 'success';
+$error = ''; // Inisialisasi error message
 
 // PROSES LOGIN
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,38 +26,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // LOGIN USER/ADMIN DARI FORM UTAMA
   // =========================
   if (isset($_POST['login_admin'])) { 
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $username = mysqli_real_escape_string($conn, $_POST['username'] ?? '');
+    // Ambil password dari form
+    $password = $_POST['password'] ?? ''; 
 
-    // 1. Cek Login Admin Statis
+    // 1. Cek Admin Hardcoded (admin/12345)
     if ($username === 'admin' && $password === '12345') {
         $_SESSION['user'] = [
-            'id' => -1, // Unique ID for Admin
+            'id' => -1, // ID Admin
             'nama' => 'Administrator',
             'username' => 'admin'
         ];
+        // ✅ PERBAIKAN: Arahkan Admin ke beranda.php (Beranda Admin)
         header('Location: beranda.php'); 
         exit;
     }
 
     // 2. Cek Login User dari Database
+    // Asumsi: kolom password di DB diberi nama 'password'
     $db_username = mysqli_real_escape_string($conn, $username);
     
+    // Perhatikan: query Anda menggunakan 'password', mari kita asumsikan kolomnya bernama 'password'
     $sql = "SELECT id, nama, username, password FROM users WHERE username = '$db_username'";
     $result = mysqli_query($conn, $sql);
     $user = mysqli_fetch_assoc($result);
 
-    if ($user && password_verify($password, $user['password'])) {
-        // Login berhasil
+    if ($user && password_verify($password, $user['password'])) { // Menggunakan password_verify (disarankan)
+        // Login berhasil (User Biasa)
         $_SESSION['user'] = [
             'id'       => $user['id'], 
             'nama'     => $user['nama'],
             'username' => $user['username']
         ];
+        // Redirect User biasa ke Beranda
         header('Location: beranda.php');
         exit;
     } else {
-        echo "<script>alert('Username atau password salah!');</script>";
+        $error = "Username atau password salah!";
     }
   }
 }
@@ -258,8 +264,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       overflow-y: auto;
       font-size: 0.8rem;
       background-color: #f8f8f8;
-      display: flex; /* Tambahkan ini agar pesan bisa diatur align-self */
-      flex-direction: column; /* Tambahkan ini agar pesan berjejer ke bawah */
+      display: flex; 
+      flex-direction: column; 
     }
 
     .chat-message {
@@ -279,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background-color: #c24a4a;
       color: #fff;
       margin-left: auto;
-      align-self: flex-end; /* Tambahkan ini agar pesan user di kanan */
+      align-self: flex-end; 
     }
 
     .chat-footer {
@@ -316,6 +322,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-container">
   <div class="login-box">
     <h5>SELAMAT DATANG<br>DI AUTO CARE</h5>
+
+    <?php if ($error): ?>
+        <div class="alert alert-danger text-center" role="alert">
+            <?= $error ?>
+        </div>
+    <?php endif; ?>
 
     <form method="POST">
       <input type="hidden" name="login_admin" value="1"> 

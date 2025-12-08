@@ -2,8 +2,8 @@
 // inc/koneksi.php
 $host = "localhost";
 $user = "root";
-$pass = ""; // Ganti jika password MySQL/MariaDB Anda tidak kosong
-$db   = "auto_care";
+$pass = ""; // Ganti sesuai password Anda
+$db   = "auto_care"; // HARUS 'auto_care'
 
 $conn = mysqli_connect($host, $user, $pass, $db);
 

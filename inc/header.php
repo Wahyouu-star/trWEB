@@ -2,6 +2,8 @@
 if (session_status() !== PHP_SESSION_ACTIVE) {
     @session_start();
 }
+// Cek jika Admin login
+$is_admin = isset($_SESSION['user']['id']) && $_SESSION['user']['id'] == -1;
 ?>
 
 <style>
@@ -42,6 +44,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     text-decoration: none;
     padding: 6px 0;
     margin-left: 20px;
+    /* Tambahkan style khusus untuk link Admin */
+    <?= $is_admin ? 'color: #2ecc71 !important; font-weight: 700;' : '' ?>
   }
 
   .nav-link-text:hover {
@@ -65,8 +69,12 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
   <a class="navbar-brand" href="beranda.php">AUTO CARE</a>
 
   <div class="nav-links">
-    <a class="nav-link-text" href="beranda.php">Beranda</a>
-
+    <?php if ($is_admin): ?>
+        <a class="nav-link-text" href="admin_dashboard.php">DASHBOARD ADMIN</a>
+    <?php else: ?>
+        <a class="nav-link-text" href="beranda.php">Beranda</a>
+    <?php endif; ?>
+    
     <a href="profil.php" class="profile-icon-wrapper">
       <img src="IMG/profil.jpg" alt="Profil">
     </a>

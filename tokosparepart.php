@@ -1,10 +1,20 @@
 <?php
 session_start();
-include "products.php";
+// 1. Panggil koneksi DB.
+include "inc/koneksi.php"; 
+// 2. Panggil products.php. Ini akan mengisi array $products dari DB.
+include "products.php"; 
 
 $cartCount = 0;
 if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
   $cartCount = array_sum($_SESSION['cart']);
+}
+
+$debug_error = '';
+if (!isset($conn) || $conn === false) {
+    $debug_error = "KONEKSI DATABASE GAGAL. Cek XAMPP atau file inc/koneksi.php.";
+} elseif (empty($products) && (isset($conn) && @mysqli_num_rows(mysqli_query($conn, "SELECT id FROM products")) == 0)) {
+    $debug_error = "Tabel PRODUCTS kosong. Silakan masuk sebagai Admin (admin/12345) dan tambahkan produk melalui menu Manajemen Produk (CRUD).";
 }
 ?>
 <!DOCTYPE html>
@@ -13,7 +23,6 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
   <meta charset="UTF-8">
   <title>Auto Care - Toko Sparepart</title>
 
-  <!-- BOOTSTRAP & ICON -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -178,6 +187,12 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
 
 <div class="page-shop">
   <div class="shop-wrapper">
+    
+    <?php if (empty($products) && isset($debug_error)): ?>
+      <div class="alert alert-warning text-center mb-4">
+        <strong>⚠️ Perhatian:</strong> <?= $debug_error ?>
+      </div>
+    <?php endif; ?>
 
     <div class="shop-top-bar">
       <div class="shop-search-box">
@@ -195,28 +210,34 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
     <h2 class="shop-title">Produk</h2>
 
     <div class="shop-product-grid" id="productGrid">
-      <?php foreach ($products as $p): ?>
-        <div class="shop-product-card">
-          <div class="img">
-            <img src="<?= $p['image'] ?>">
+      <?php if (empty($products)): ?>
+        <p class="text-center w-100 alert alert-info">
+            Toko sparepart saat ini kosong.
+            Silakan masuk sebagai Admin (admin/12345) dan tambahkan produk melalui menu **Manajemen Produk (CRUD)**.
+        </p>
+      <?php else: ?>
+        <?php foreach ($products as $p): ?>
+          <div class="shop-product-card">
+            <div class="img">
+              <img src="<?= $p['image'] ?>">
+            </div>
+
+            <h4><?= htmlspecialchars($p["name"]) ?></h4>
+            <p>Rp <?= number_format($p["price"],0,',','.') ?></p>
+
+            <button class="shop-btn-add add-to-cart"
+                    data-id="<?= $p['id'] ?>"
+                    data-name="<?= htmlspecialchars($p['name']) ?>">
+              🛒 Tambahkan
+            </button>
           </div>
-
-          <h4><?= htmlspecialchars($p["name"]) ?></h4>
-          <p>Rp <?= number_format($p["price"],0,',','.') ?></p>
-
-          <button class="shop-btn-add add-to-cart"
-                  data-id="<?= $p['id'] ?>"
-                  data-name="<?= htmlspecialchars($p['name']) ?>">
-            🛒 Tambahkan
-          </button>
-        </div>
-      <?php endforeach; ?>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
 
   </div>
 </div>
 
-<!-- MODAL INPUT JUMLAH -->
 <div class="modal fade" id="qtyModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center p-4">
@@ -238,7 +259,6 @@ if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
   </div>
 </div>
 
-<!-- MODAL SUKSES -->
 <div class="modal fade" id="cartSuccessModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center p-4">
