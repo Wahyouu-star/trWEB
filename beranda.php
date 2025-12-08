@@ -51,20 +51,20 @@
       margin-top: 85px;
       text-align: center;
       background-color: #fff;
-      padding: 0 15px; /* sedikit ruang di kiri kanan di layar kecil */
+      padding: 0 15px; 
     }
 
     .banner img {
       width: 100%;
-      height: auto;       /* biar proporsi gambar tetap */
-      max-height: none;   /* hilangkan batas tinggi kaku */
+      height: auto;      
+      max-height: none;   
       border-radius: 10px;
       object-fit: cover;
     }
 
     @media (max-width: 576px) {
       .banner {
-        margin-top: 75px; /* navbar di hp biasanya lebih kecil */
+        margin-top: 75px; 
       }
     }
 
@@ -121,7 +121,6 @@
       font-weight: 500;
     }
 
-    /* === Produk Diskon === */
     .promo-section {
       background-color: #ffffff;
       padding: 30px 0;
@@ -150,7 +149,7 @@
       border-radius: 10px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       padding: 12px 12px 14px 12px;
-      width: 170px;              /* tidak terlalu besar */
+      width: 170px;             
       text-align: center;
       font-size: 0.85rem;
     }
@@ -193,7 +192,6 @@
       margin-bottom: 6px;
     }
 
-    /* === Tentang Kami === */
     .tentang-section {
       background-color: #b22929;
       color: white;

@@ -1,7 +1,39 @@
 <?php
+// riwayat.php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+include "inc/koneksi.php";
+
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id']) || $_SESSION['user']['id'] == 0) {
+    // Redirect jika tidak ada ID user (termasuk Guest)
+    header('Location: login.php');
+    exit;
+}
+
+$user_id = $_SESSION['user']['id'];
+
+// ==================================
+// 1. HAPUS SEMUA RIWAYAT DARI DATABASE (DENGAN user_id)
+// ==================================
+if (isset($_GET['action']) && $_GET['action'] === 'clear') {
+    // Mengubah TRUNCATE menjadi DELETE WHERE user_id agar hanya menghapus data user ini
+    $sql_delete = "DELETE FROM riwayat WHERE user_id = $user_id"; 
+    
+    if (mysqli_query($conn, $sql_delete)) {
+        header('Location: riwayat.php?status=cleared');
+        exit;
+    } else {
+        echo "<script>alert('Gagal menghapus riwayat: " . mysqli_error($conn) . "');</script>";
+    }
+}
+
+// ==================================
+// 2. AMBIL DATA DARI DATABASE (DENGAN user_id)
+// ==================================
+// Ambil hanya data riwayat milik user yang sedang login
+$result = mysqli_query($conn, "SELECT * FROM riwayat WHERE user_id = $user_id ORDER BY selesai_pada DESC");
+$riwayat_list = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -120,7 +152,6 @@ main{
 
 <body>
 
-<!-- ===== NAVBAR ===== -->
 <header class="consistent-navbar">
   <a class="navbar-brand" href="beranda.php">AUTO CARE</a>
   <div class="nav-links">
@@ -131,44 +162,36 @@ main{
   </div>
 </header>
 
-<!-- ===== KONTEN RIWAYAT ===== -->
 <main>
 
 <div class="judul">Riwayat Servis</div>
 
-<div id="riwayatList"></div>
+<div id="riwayatList">
+<?php if (empty($riwayat_list)): ?>
+    <div class='kosong'>Belum ada riwayat servis.</div>
+<?php else: ?>
+    <?php foreach ($riwayat_list as $item): ?>
+        <div class="svc-card">
+            <b><?= htmlspecialchars($item['jenis_servis']) ?></b><br><br>
+            Jarak: <?= htmlspecialchars($item['jarak']) ?> km<br>
+            Durasi: <?= htmlspecialchars($item['durasi']) ?> jam<br>
+            Waktu: <?= htmlspecialchars($item['waktu']) ?><br>
+            Interval: <?= htmlspecialchars($item['interval_servis']) ?><br><br>
+            <small>Tanggal Selesai: <?= date('d M Y H:i', strtotime($item['selesai_pada'])) ?></small>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
+</div>
 
 <button class="hapus-semua" onclick="hapusRiwayat()">Hapus Semua Riwayat</button>
 
 </main>
 
-<!-- ===== SCRIPT ===== -->
 <script>
-const list = document.getElementById("riwayatList");
-const data = JSON.parse(localStorage.getItem("riwayat_servis")) || [];
-
-if(data.length === 0){
-  list.innerHTML = "<div class='kosong'>Belum ada riwayat servis.</div>";
-}else{
-  data.forEach(item=>{
-    const div = document.createElement("div");
-    div.className = "svc-card";
-    div.innerHTML = `
-      <b>${item.jenis}</b><br><br>
-      Jarak: ${item.jarak} km<br>
-      Durasi: ${item.durasi}<br>
-      Waktu: ${item.waktu}<br>
-      Interval: ${item.interval}<br><br>
-      <small>${item.tanggal}</small>
-    `;
-    list.appendChild(div);
-  });
-}
-
 function hapusRiwayat(){
-  if(confirm("Yakin ingin menghapus semua riwayat servis?")){
-    localStorage.removeItem("riwayat_servis");
-    location.reload();
+  if(confirm("Yakin ingin menghapus semua riwayat servis? Tindakan ini tidak dapat dibatalkan.")){
+    // Redirect ke URL dengan parameter clear
+    window.location.href = "riwayat.php?action=clear";
   }
 }
 </script>

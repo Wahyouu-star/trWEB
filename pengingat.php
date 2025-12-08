@@ -1,5 +1,55 @@
 <?php
-include "inc/header.php"; // pakai header template kamu
+// pengingat.php
+include "inc/header.php";
+include "inc/koneksi.php";
+
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id']) || $_SESSION['user']['id'] == 0) {
+    header('Location: login.php');
+    exit;
+}
+
+$user_id = $_SESSION['user']['id'];
+
+// ==================================
+// 1. TAMBAH DATA KE DATABASE
+// ==================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
+    $jenis          = mysqli_real_escape_string($conn, $_POST['jenis'] ?? '');
+    $jarak          = (int)($_POST['jarak'] ?? 0);
+    $durasi_jam     = (int)($_POST['durasi_jam'] ?? 0);
+    $waktu          = mysqli_real_escape_string($conn, $_POST['waktu'] ?? '');
+    $interval_servis = mysqli_real_escape_string($conn, $_POST['interval'] ?? '');
+
+    $sql_insert = "INSERT INTO pengingat (user_id, jenis_servis, jarak, durasi, waktu, interval_servis, created_at) 
+                   VALUES ($user_id, '$jenis', $jarak, $durasi_jam, '$waktu', '$interval_servis', NOW())";
+
+    if (mysqli_query($conn, $sql_insert)) {
+        header('Location: pengingat.php?status=success');
+        exit;
+    } else {
+        echo "<script>alert('Gagal menyimpan pengingat: " . mysqli_error($conn) . "');</script>";
+    }
+}
+
+// ==================================
+// 2. HAPUS DATA DARI DATABASE
+// ==================================
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    $sql_delete = "DELETE FROM pengingat WHERE id = $id AND user_id = $user_id";
+    if (mysqli_query($conn, $sql_delete)) {
+        header('Location: pengingat.php');
+        exit;
+    } else {
+        echo "<script>alert('Gagal menghapus pengingat: " . mysqli_error($conn) . "');</script>";
+    }
+}
+
+// ==================================
+// 3. AMBIL DATA DARI DATABASE
+// ==================================
+$result = mysqli_query($conn, "SELECT * FROM pengingat WHERE user_id = $user_id ORDER BY id DESC");
+$pengingat_list = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -9,6 +59,7 @@ include "inc/header.php"; // pakai header template kamu
 <title>Pengingat Servis</title>
 
 <style>
+/* ... (Bagian Style CSS Anda, TIDAK PERLU DIUBAH) ... */
 body{
   background:#f5f5f5;
   font-family:"Poppins", Arial;
@@ -195,38 +246,63 @@ body{
   <div class="title-pill">Pengingat Servis Rutin</div>
 </center>
 
-<div id="list"></div>
+<div id="list">
+  <?php if (empty($pengingat_list)): ?>
+    <div class='svc-card' style="text-align:center;">Belum ada pengingat servis yang ditambahkan.</div>
+  <?php else: ?>
+    <?php foreach ($pengingat_list as $item): ?>
+    <div class="svc-card">
+      <div class="svc-title"><?= htmlspecialchars($item['jenis_servis']) ?></div>
+      <div class="svc-meta">
+        Jarak: <?= htmlspecialchars($item['jarak']) ?> km<br>
+        Durasi: <?= htmlspecialchars($item['durasi']) ?> jam<br>
+        Waktu: <?= htmlspecialchars($item['waktu']) ?><br>
+        Interval: <?= htmlspecialchars($item['interval_servis']) ?>
+      </div>
+
+      <div class="card-footer">
+        <small>Ditambahkan: <?= date('d M Y H:i', strtotime($item['created_at'] ?? date('Y-m-d H:i:s'))) ?></small>
+        <div>
+          <a href="pengingat.php?delete=<?= $item['id'] ?>" class="btn btn-hapus" onclick="return confirm('Yakin ingin menghapus pengingat ini?');">Hapus</a>
+          
+          <a href="pindah_ke_riwayat.php?id=<?= $item['id'] ?>" class="btn btn-selesai" onclick="return confirm('Pengingat ini akan dipindahkan ke Riwayat Servis. Lanjutkan?');">Selesai</a>
+        </div>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
 
 <button class="btn-tambah" onclick="bukaModal()">Tambah +</button>
 
-<!-- MODAL INPUT -->
 <div class="modal" id="modal">
-  <div class="modal-box">
+  <form class="modal-box" method="POST">
+    <input type="hidden" name="action" value="add">
     <h3>Tambah Jadwal</h3>
 
     <div class="form-group">
       <label>Jenis Servis</label>
-      <input id="jenis">
+      <input id="jenis" name="jenis" required>
     </div>
 
     <div class="form-group">
       <label>Jarak (km)</label>
-      <input type="number" id="jarak">
+      <input type="number" id="jarak" name="jarak" required>
     </div>
 
     <div class="form-group">
       <label>Durasi (jam)</label>
-      <input type="number" id="durasi">
+      <input type="number" id="durasi" name="durasi_jam" required>
     </div>
 
     <div class="form-group">
       <label>Waktu</label>
-      <input type="time" id="waktu">
+      <input type="time" id="waktu" name="waktu" required>
     </div>
 
     <div class="form-group">
       <label>Interval</label>
-      <select id="interval">
+      <select id="interval" name="interval" required>
         <option>3 bulan / 5000 km</option>
         <option>6 bulan / 10000 km</option>
         <option>12 bulan / 20000 km</option>
@@ -234,18 +310,17 @@ body{
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-hapus" onclick="tutupModal()">Batal</button>
-      <button class="btn btn-selesai" onclick="simpan()">Tambah</button>
+      <button type="button" class="btn btn-hapus" onclick="tutupModal()">Batal</button>
+      <button type="submit" class="btn btn-selesai">Tambah</button>
     </div>
-  </div>
+  </form>
 </div>
 
-<!-- POPUP -->
-<div class="success-popup" id="popup">
+<div class="success-popup" id="popup" style="<?= (isset($_GET['status']) && ($_GET['status'] === 'success' || $_GET['status'] === 'moved')) ? 'display:flex;' : 'display:none;' ?>">
   <div class="success-card">
     <div class="success-icon">✔</div>
     <h3>Berhasil</h3>
-    <p>Jadwal berhasil ditambahkan</p>
+    <p>Jadwal berhasil <?= ($_GET['status'] === 'moved') ? 'diselesaikan dan dipindahkan ke Riwayat.' : 'ditambahkan'; ?></p>
     <button class="btn-ok-modern" onclick="tutupPopup()">OK</button>
   </div>
 </div>
@@ -259,40 +334,10 @@ function tutupModal(){
   document.getElementById("modal").style.display="none";
 }
 
-function simpan(){
-  let jenis = document.getElementById("jenis").value;
-  let jarak = document.getElementById("jarak").value;
-  let durasi = document.getElementById("durasi").value;
-  let waktu = document.getElementById("waktu").value;
-  let interval = document.getElementById("interval").value;
-
-  let card = `
-  <div class="svc-card">
-    <div class="svc-title">${jenis}</div>
-    <div class="svc-meta">
-      Jarak: ${jarak} km<br>
-      Durasi: ${durasi} jam<br>
-      Waktu: ${waktu}<br>
-      Interval: ${interval}
-    </div>
-
-    <div class="card-footer">
-      <small>${new Date().toLocaleString()}</small>
-      <div>
-        <button class="btn btn-hapus" onclick="this.closest('.svc-card').remove()">Hapus</button>
-        <button class="btn btn-selesai" onclick="this.closest('.svc-card').classList.add('selesai')">Selesai</button>
-      </div>
-    </div>
-  </div>`;
-
-  document.getElementById("list").innerHTML += card;
-
-  tutupModal();
-  document.getElementById("popup").style.display="flex";
-}
-
 function tutupPopup(){
   document.getElementById("popup").style.display="none";
+  // Hapus parameter status dari URL agar popup tidak muncul lagi setelah refresh
+  window.history.pushState({}, document.title, "pengingat.php");
 }
 </script>
 

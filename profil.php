@@ -1,35 +1,59 @@
 <?php
 session_start();
+include "inc/header.php"; 
+include "inc/koneksi.php"; 
+
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id']) || $_SESSION['user']['id'] == 0) {
+    header('Location: login.php');
+    exit;
+}
+
+$user_id = $_SESSION['user']['id'];
+$status_success = false;
+$error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $nama   = trim($_POST['nama']);
-  $tgl    = trim($_POST['tgl']);
-  $gender = trim($_POST['gender']);
-  $telp   = trim($_POST['telp']);
-  $email  = trim($_POST['email']);
+  $nama   = mysqli_real_escape_string($conn, trim($_POST['nama']));
+  $tgl    = mysqli_real_escape_string($conn, trim($_POST['tgl']));
+  $gender = mysqli_real_escape_string($conn, trim($_POST['gender']));
+  $telp   = mysqli_real_escape_string($conn, trim($_POST['telp']));
+  $email  = mysqli_real_escape_string($conn, trim($_POST['email']));
 
   if ($nama && $tgl && $gender && $telp && $email) {
-    echo "
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const popup = document.createElement('div');
-        popup.className = 'popup-overlay';
+    $sql_update = "UPDATE users SET 
+                    nama = '$nama', 
+                    tgl_lahir = '$tgl', 
+                    gender = '$gender', 
+                    telp = '$telp', 
+                    email = '$email'
+                   WHERE id = $user_id";
 
-        popup.innerHTML = `
-          <div class='popup-box'>
-            <div class='popup-icon'>✔</div>
-            <h3>Berhasil</h3>
-            <p>Data profil berhasil diperbarui</p>
-            <button class='popup-btn' onclick='window.location=\"sparepart.php\";'>OK</button>
-          </div>
-        `;
-        document.body.appendChild(popup);
-      });
-    </script>
-    ";
+    if (mysqli_query($conn, $sql_update)) {
+        $status_success = true;
+    } else {
+        $error_message = "Gagal menyimpan data ke database: " . mysqli_error($conn);
+    }
   } else {
-    echo "<script>alert('Mohon lengkapi semua data sebelum menyimpan profil!');</script>";
+    $error_message = "Mohon lengkapi semua data sebelum menyimpan profil!";
   }
+}
+
+$sql_select = "SELECT nama, tgl_lahir, gender, telp, email FROM users WHERE id = $user_id";
+$result = mysqli_query($conn, $sql_select);
+$data_profil = mysqli_fetch_assoc($result);
+
+$current_nama = $data_profil['nama'] ?? '';
+$current_tgl = $data_profil['tgl_lahir'] ?? '';
+$current_gender = $data_profil['gender'] ?? 'Laki-Laki'; 
+$current_telp = $data_profil['telp'] ?? '';
+$current_email = $data_profil['email'] ?? '';
+
+if ($status_success) {
+    $current_nama = $nama;
+    $current_tgl = $tgl;
+    $current_gender = $gender;
+    $current_telp = $telp;
+    $current_email = $email;
 }
 ?>
 
@@ -44,352 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           font-family: Poppins, sans-serif;
           background: #f5f5f5;
       }
-
-      .header {
-          width: 100%;
-          background: white;
-          padding: 15px 40px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid #eee;
-      }
-
-      .right {
-          display: flex;
-          align-items: center;
-          gap: 35px;
-          margin-right: 70px;
-      }
-
-      .menu-text {
-          margin-right: 10px;
-      }
-
-
-      .profile-icon {
-          text-decoration: none;
-      }
-
-      .avatar {
-          width: 35px;
-          height: 35px;
-          border-radius: 50%;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: #ddd;
-      }
-
-      .avatar-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-      }
-
-
-
-      .logo {
-          font-size: 22px;
-          font-weight: 700;
-      }
-
-      .top-bar {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 15px 40px;
-          margin-top: 10px;
-      }
-
-      .search-box {
-          width: 70%;
-          max-width: 600px;
-          background: #f8f8f8;
-          padding: 10px 15px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          border: 1px solid #ddd;
-      }
-
-      .search-box i {
-          margin-right: 10px;
-          color: #777;
-      }
-
-      .search-box input {
-          width: 100%;
-          border: none;
-          outline: none;
-          font-size: 15px;
-          background: transparent;
-      }
-
-      .cart-page-icon {
-          position: relative;
-      }
-
-      .cart-page-icon img {
-          width: 30px;
-      }
-
-      .notif {
-          position: absolute;
-          top: -6px;
-          right: -8px;
-          background: red;
-          color: white;
-          padding: 3px 7px;
-          border-radius: 50%;
-          font-size: 12px;
-      }
-
-
-      /* PRODUCT GRID */
-      .container {
-          padding: 30px;
-      }
-
-      .title {
-          margin-bottom: 15px;
-      }
-
-      .product-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 20px;
-      }
-
-      .product-card {
-          background: white;
-          padding: 15px;
-          border-radius: 12px;
-          box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
-          text-align: center;
-      }
-
-      .product-card .img {
-          width: 100%;
-          height: 120px;
-          background: #ddd;
-          border-radius: 10px;
-          margin-bottom: 10px;
-      }
-
-      .product-card .img {
-          width: 100%;
-          height: 140px;
-          background: #ddd;
-          border-radius: 10px;
-          margin-bottom: 10px;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-      }
-
-      .product-card .img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-      }
-
-      .cart-img2 {
-          width: 80px;
-          height: 80px;
-          background: #f5f5f5;
-          border-radius: 10px;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-      }
-
-      .cart-img2 img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-      }
-
-
-
-      .btn-add {
-          background: #c0392b;
-          color: white;
-          padding: 8px 15px;
-          border-radius: 8px;
-          text-decoration: none;
-          display: inline-block;
-      }
-
-      /* CART PAGE */
-      .cart-box {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          max-width: 500px;
-      }
-
-      .cart-item {
-          display: flex;
-          gap: 15px;
-          margin-bottom: 15px;
-      }
-
-      .img-small {
-          width: 60px;
-          height: 60px;
-          background: #ddd;
-          border-radius: 10px;
-      }
-
-      .btn-pay {
-          background: #c0392b;
-          width: 100%;
-          padding: 12px;
-          border: none;
-          border-radius: 10px;
-          color: white;
-          font-size: 16px;
-      }
-
-      .pay-container {
-          margin-top: 30px;
-          display: grid;
-          grid-template-columns: 1.2fr 1fr;
-          gap: 30px;
-      }
-
-      /* LIST PRODUK KIRI */
-      .cart-list-box {
-          background: #fff;
-          padding: 25px;
-          border-radius: 15px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-          height: fit-content;
-      }
-
-      .cart-item2 {
-          display: flex;
-          gap: 15px;
-          padding-bottom: 20px;
-          margin-bottom: 20px;
-          border-bottom: 1px solid #eee;
-      }
-
-      .cart-img2 {
-          width: 80px;
-          height: 80px;
-          background: #e6e6e6;
-          border-radius: 15px;
-      }
-
-      /* FORM PEMBAYARAN */
-      .pay-box {
-          background: #fff;
-          padding: 35px;
-          border-radius: 20px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      }
-
-      .pay-box input {
-          width: 100%;
-          padding: 10px 0;
-          border: none;
-          border-bottom: 1px solid #bbb;
-          margin-bottom: 20px;
-          outline: none;
-      }
-
-      .btn-pay-new {
-          width: 100%;
-          padding: 15px;
-          font-size: 18px;
-          background: #c0392b;
-          color: white;
-          border: none;
-          border-radius: 25px;
-          cursor: pointer;
-          margin-top: 20px;
-          box-shadow: 0 4px 8px rgba(192,57,43,0.3);
-      }
-
-      .btn-pay-new:hover {
-          background: #a83226;
-      }
-
-      /* POPUP BACKGROUND */
-      .popup {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,0.5);
-          display: none;
-          justify-content: center;
-          align-items: center;
-          z-index: 9999;
-      }
-
-      /* POPUP BOX */
-      .popup-box {
-          width: 260px;
-          background: white;
-          border-radius: 15px;
-          padding: 20px;
-          text-align: center;
-          box-shadow: 0px 6px 15px rgba(0,0,0,0.2);
-      }
-
-      /* ICON CIRCLE */
-      .popup-icon {
-          width: 70px;
-          height: 70px;
-          margin: 0 auto 10px;
-          background: #c34646;
-          color: white;
-          font-size: 40px;
-          font-weight: bold;
-          border-radius: 50%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-      }
-
-      /* TITLE */
-      .popup-box h3 {
-          font-size: 22px;
-          margin-top: 5px;
-      }
-
-      /* TEXT */
-      .popup-box p {
-          margin: 10px 0 20px;
-          font-size: 14px;
-      }
-
-      /* OK BUTTON */
-      .popup-ok {
-          background: #c34646;
-          color: white;
-          border: none;
-          padding: 8px 25px;
-          border-radius: 10px;
-          font-size: 15px;
-          cursor: pointer;
-      }
-
-      .popup-ok:hover {
-          background: #a63434;
-      }
-
-      /* ================================
-         POPUP SUCCESS (GLOBAL STYLE)
-         ================================ */
 
       .popup-overlay {
           position: fixed;
@@ -412,11 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           animation: fadeInPopup 0.35s ease;
       }
 
-      /* ICON BULAT MERAH */
       .popup-icon {
           width: 70px;
           height: 70px;
-          background: #c34646;
+          background: #2ecc71; 
           border-radius: 50%;
           color: #fff;
           font-size: 38px;
@@ -425,8 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           align-items: center;
           margin: 0 auto 12px;
       }
-
-      /* TEXT */
+      
       .popup-box h3 {
           font-size: 22px;
           margin-bottom: 8px;
@@ -437,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           margin-bottom: 18px;
       }
 
-      /* BUTTON */
       .popup-btn {
           background: #c34646;
           color: #fff;
@@ -454,7 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           background: #a73737;
       }
 
-      /* ANIMASI */
       @keyframes fadeInPopup {
           from { transform: scale(0.85); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
@@ -464,31 +138,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           from { opacity: 0; }
           to { opacity: 1; }
       }
-
-      /* Container Card */
+      
       .profile-container {
         width: 450px;
-        margin: 50px auto;
+        margin: 100px auto 50px auto; 
         padding: 25px;
         background: #ffffff;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       }
 
-      /* Title */
       .profile-container h2 {
         text-align: center;
         margin-bottom: 25px;
       }
 
-      /* Label */
       .profile-container label {
         font-weight: 600;
         margin-top: 10px;
         display: block;
       }
 
-      /* Input */
       .profile-container input[type="text"],
       .profile-container input[type="date"],
       .profile-container input[type="tel"],
@@ -502,7 +172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size: 15px;
       }
 
-      /* Date Input with Icon */
       .date-input {
         position: relative;
       }
@@ -515,7 +184,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size: 20px;
       }
 
-      /* Gender Button */
       .gender-btns {
         display: flex;
         gap: 10px;
@@ -564,58 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         background: #c9302c;
       }
 
-      /* Popup */
-      .popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .popup-box {
-        background: white;
-        padding: 20px 30px;
-        border-radius: 12px;
-        text-align: center;
-        width: 300px;
-      }
-
-      .popup-icon {
-        font-size: 40px;
-        color: green;
-        margin-bottom: 10px;
-      }
-
-      .popup-btn {
-        margin-top: 12px;
-        background: #d9534f;
-        color: white;
-        padding: 8px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-
-      .footer {
-          width: 100%;
-          background: #ffffff;
-          border-top: 2px solid #eee;
-          padding: 15px 0;
-          margin-top: 40px;
-      }
-
-      .footer-container {
-          text-align: center;
-          font-size: 14px;
-          color: #777;
-      }
-
-      /* Tambahan style dari profil.php */
       .profile-header {
         display: flex;
         justify-content: space-between;
@@ -649,8 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
 
-<?php include "inc/header.php"; ?>
-
 <main>
   <div class="profile-container">
 
@@ -661,37 +275,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         → Logout </a>
     </div>
 
+    <?php if ($error_message): ?>
+        <p style="color: red; text-align: center; font-weight: bold;"><?= $error_message ?></p>
+    <?php endif; ?>
+
     <form method="POST">
       <label>Nama Lengkap</label>
-      <input type="text" name="nama" placeholder="Masukkan nama lengkap" required>
+      <input type="text" name="nama" placeholder="Masukkan nama lengkap" value="<?= htmlspecialchars($current_nama) ?>" required>
 
       <label>Tanggal Lahir</label>
       <div class="date-input">
-        <input type="date" name="tgl" required>
+        <input type="date" name="tgl" value="<?= htmlspecialchars($current_tgl) ?>" required>
         📅 </div>
 
       <label>Jenis Kelamin</label>
       <div class="gender-btns">
-        <input type="hidden" name="gender" id="gender">
-        <button type="button" class="gender-btn active" onclick="setGender('Laki-Laki', this)">
+        <input type="hidden" name="gender" id="gender" value="<?= htmlspecialchars($current_gender) ?>">
+        <button type="button" class="gender-btn <?= ($current_gender == 'Laki-Laki') ? 'active' : '' ?>" onclick="setGender('Laki-Laki', this)">
           👤 Laki-Laki </button>
-        <button type="button" class="gender-btn" onclick="setGender('Perempuan', this)">
+        <button type="button" class="gender-btn <?= ($current_gender == 'Perempuan') ? 'active' : '' ?>" onclick="setGender('Perempuan', this)">
           🧍‍♀️ Perempuan </button>
       </div>
 
       <label>Nomor Telepon</label>
-      <input type="tel" name="telp" placeholder="Masukkan nomor telepon" required>
+      <input type="tel" name="telp" placeholder="Masukkan nomor telepon" value="<?= htmlspecialchars($current_telp) ?>" required>
 
       <label>Email Anda</label>
-      <input type="email" name="email" placeholder="Masukkan email" required>
+      <input type="email" name="email" placeholder="Masukkan email" value="<?= htmlspecialchars($current_email) ?>" required>
 
       <button type="submit" class="edit-btn">Edit Profil</button>
     </form>
   </div>
 </main>
 
+<?php if ($status_success): ?>
+<div class='popup-overlay'>
+  <div class='popup-box'>
+    <div class='popup-icon'>✔</div>
+    <h3>Berhasil</h3>
+    <p>Data profil berhasil diperbarui</p>
+    <button class='popup-btn' onclick='window.location="profil.php";'>OK</button>
+  </div>
+</div>
+<?php endif; ?>
+
+
 <script>
-  document.getElementById('gender').value = "Laki-Laki";
+  // Script untuk mengatur tampilan tombol gender yang aktif saat halaman dimuat
+  document.addEventListener('DOMContentLoaded', function() {
+      const currentGender = document.getElementById('gender').value;
+      document.querySelectorAll('.gender-btn').forEach(btn => {
+          if (btn.textContent.trim().includes(currentGender)) {
+              btn.classList.add('active');
+          } else {
+              btn.classList.remove('active');
+          }
+      });
+  });
 
   function setGender(value, el) {
     document.getElementById('gender').value = value;
